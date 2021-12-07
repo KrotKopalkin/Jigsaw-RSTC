@@ -54,13 +54,13 @@ model.to(device)
 train_loss = []
 test_loss = []
 
-train_accuracy = []
+train_accuracy = [[],[],[]]
 test_accuracy = []
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
 
-def train_loop(epochs):
+def train_loop(epochs=15):
     for epoch in range(epochs):
         for phase in ['Train', 'Test']:
             if (phase == 'Train'):
@@ -70,7 +70,7 @@ def train_loop(epochs):
                 model.eval()
                 loader = test_loader
             epoch_loss = 0
-            epoch_acc = 0
+            epoch_acc5, epoch_acc10, epoch_acc15 = 0, 0, 0
             count = 0
             for steps, data in tqdm(enumerate(loader, 0)):
                 ids = data['ids'].to(device, dtype=torch.long)
@@ -83,27 +83,38 @@ def train_loop(epochs):
                 loss = loss_function(outputs.squeeze(0), targets)
 
                 epoch_loss += loss.detach().item()
-                _, max_indices = torch.max(outputs.data, dim=1)
-                batch_acc = (abs(max_indices - targets) < 0.05).sum().item()
-                epoch_acc += batch_acc
-
+                batch_ansv5=abs(outputs - targets) < 0.05
+                batch_ansv10 = abs(outputs - targets) < 0.1
+                batch_ansv15 = abs(outputs - targets) < 0.15
+                batch_acc5 = (batch_ansv5).sum().item()
+                batch_acc10 = (batch_ansv10).sum().item()
+                batch_acc15 = (batch_ansv15).sum().item()
+                epoch_acc5 += batch_acc5
+                epoch_acc10 += batch_acc10
+                epoch_acc15 += batch_acc15
                 count += targets.size(0)
                 if (phase == 'Train'):
                     train_loss.append(loss.detach().item())
-                    train_accuracy.append(batch_acc)
+                    train_accuracy[0].append(batch_acc5)
+                    train_accuracy[1].append(batch_acc10)
+                    train_accuracy[2].append(batch_acc15)
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
                 else:
                     test_loss.append(loss.detach())
-                    test_accuracy.append(batch_acc)
+                    test_accuracy[0].append(batch_acc5)
+                    test_accuracy[1].append(batch_acc10)
+                    test_accuracy[2].append(batch_acc15)
 
-            print(f"{phase} Loss: {epoch_loss / steps}")
-            print(f"{phase} Accuracy: {epoch_acc / count}")
+            print(f"{phase} Loss: {epoch_loss / len(loader)}")
+            print(f"{phase} Accuracy: {epoch_acc5 / count}")
+            print(f"{phase} Accuracy: {epoch_acc10 / count}")
+            print(f"{phase} Accuracy: {epoch_acc15 / count}")
 
 
 """# Fine-tuning model"""
-
+EPOCHS = 15
 train_loop(EPOCHS)
 
 """# Visualizing"""

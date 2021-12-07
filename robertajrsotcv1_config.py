@@ -8,7 +8,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 EPOCHS = 4
 LEARNING_RATE = 1e-05
 MAX_LEN = 400

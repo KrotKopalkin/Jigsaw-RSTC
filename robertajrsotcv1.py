@@ -55,13 +55,14 @@ train_loss = []
 test_loss = []
 
 train_accuracy = [[],[],[]]
-test_accuracy = []
+test_accuracy = [[],[],[]]
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
 
 def train_loop(epochs=15):
     for epoch in range(epochs):
+        print(f"---------- Epoch: {epoch} ----------")
         for phase in ['Train', 'Test']:
             if (phase == 'Train'):
                 model.train()
@@ -83,9 +84,9 @@ def train_loop(epochs=15):
                 loss = loss_function(outputs.squeeze(0), targets)
 
                 epoch_loss += loss.detach().item()
-                batch_ansv5=abs(outputs - targets) < 0.05
-                batch_ansv10 = abs(outputs - targets) < 0.1
-                batch_ansv15 = abs(outputs - targets) < 0.15
+                batch_ansv5 = abs(outputs.squeeze() - targets) < 0.05
+                batch_ansv10 = abs(outputs.squeeze() - targets) < 0.1
+                batch_ansv15 = abs(outputs.squeeze() - targets) < 0.15
                 batch_acc5 = (batch_ansv5).sum().item()
                 batch_acc10 = (batch_ansv10).sum().item()
                 batch_acc15 = (batch_ansv15).sum().item()
@@ -106,8 +107,7 @@ def train_loop(epochs=15):
                     test_accuracy[0].append(batch_acc5)
                     test_accuracy[1].append(batch_acc10)
                     test_accuracy[2].append(batch_acc15)
-
-            print(f"{phase} Loss: {epoch_loss / len(loader)}")
+            print(f"{phase} Loss: {epoch_loss / count}")
             print(f"{phase} Accuracy: {epoch_acc5 / count}")
             print(f"{phase} Accuracy: {epoch_acc10 / count}")
             print(f"{phase} Accuracy: {epoch_acc15 / count}")
